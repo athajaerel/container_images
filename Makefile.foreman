@@ -1,0 +1,26 @@
+## Metadata #####################
+foreman: title = Foreman
+foreman: desc = A bare-metal provisioning system
+
+# These get passed to the bash scripts in the PASS_ARGS env var
+foreman: args = x=1 y=2
+
+## Remote #######################
+foreman: base_image = docker.io/library/alpine
+foreman: image = ${remote}/dreamtrack-net/foreman
+
+## Commands #####################
+foreman: base_update = apk update
+foreman: requirements = apk add \
+	shadow                   \
+	bash
+
+## Internal #####################
+# These are space-delimited lists eg. "a b c"
+foreman: chown_list =   \
+	/var/run
+foreman: ports_list = 443/tcp
+
+## Target #######################
+foreman:
+	$(buildah-bud)
