@@ -14,10 +14,10 @@ remote = ghcr.io
 uid = 900
 username = _$@
 
-secure = scripts/$@_secure.bash
-install = scripts/$@_install.bash
-config = scripts/$@_config.bash
-run = scripts/$@_run.bash
+secure = $@_secure.bash
+install = $@_install.bash
+config = $@_config.bash
+run = $@_run.bash
 
 pass_args = $(foreach a,$(args),$(a))
 
