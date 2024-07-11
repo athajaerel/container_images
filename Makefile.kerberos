@@ -1,0 +1,39 @@
+## Metadata #####################
+kerberos: title = Kerberos
+kerberos: desc = MIT Kerberos v5, a network authentication system
+
+## Realm ########################
+# These get passed to the bash scripts in the PASS_ARGS env var
+kerberos: args =                    \
+	realm=THEREALM.LAB          \
+	admin=adminy_mcadminface    \
+	admin_pw=adminp@ssword123   \
+	master_pw=masterp@ssword123 \
+	admin_type=wizard
+
+## Remote #######################
+kerberos: base_image = docker.io/library/alpine
+kerberos: image = ${remote}/dreamtrack-net/kerberos
+
+## Commands #####################
+kerberos: base_update = apk update
+kerberos: requirements = apk add \
+	shadow                   \
+	bash                     \
+	expect                   \
+	libcap                   \
+	krb5                     \
+	krb5-server
+
+## Internal #####################
+# These are space-delimited lists eg. "a b c"
+kerberos: chown_list =   \
+	/etc/krb5.conf   \
+	/var/run         \
+	/var/lib/krb5kdc
+kerberos: ports_list = 88/tcp
+# ARG PORTS=88/udp 88/tcp 749/tcp 4444/udp 749/tcp 464/udp ?
+
+## Target #######################
+kerberos:
+	$(buildah-bud)

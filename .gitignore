@@ -1,0 +1,11 @@
+# Inverted ignore file
+*
+!.dockerignore
+!.gitignore
+!.plan
+!Containerfile
+!Makefile*
+!README.md
+!utils/
+!scripts/
+!scripts/*bash
