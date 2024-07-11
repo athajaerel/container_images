@@ -1,59 +1,52 @@
-# 1. Get base image
 ARG BASE_IMAGE
-FROM ${BASE_IMAGE}
-
-# 1. Update base image
 ARG BASE_UPDATE
-RUN ${BASE_UPDATE}
-
-# 1. Install container requirements
-ARG REQUIREMENTS
-RUN ${REQUIREMENTS}
-
-# Pass through some arguments to the bash scripts
+ARG CHOWN_LIST
+ARG CONF_BASH
+ARG INST_BASH
 ARG PASS_ARGS
-
-# 1. Security tweaks in base image
-# Copy to invalidate the layer on script change.
-RUN mkdir -p /scripts
+ARG PORTS_LIST
+ARG REQUIREMENTS
+ARG RUN_CMD
 ARG SEC_BASH
-COPY ${SEC_BASH} /scripts
-RUN ${SEC_BASH}
-
-# 1. Create user and group
 ARG UID
 ARG USERNAME
-RUN groupadd -g ${UID} ${USERNAME}                      \
+
+# 1. Get base image
+FROM ${BASE_IMAGE}
+
+# 1. Update base image, install container requirements and apply
+#    security tweaks in base image
+RUN ${BASE_UPDATE}          \
+    && ${REQUIREMENTS}      \
+    && mkdir -p scripts opt
+
+# Copy to invalidate the layer on script change.
+# 1. Create user and group
+COPY --chmod=0755 scripts/${SEC_BASH} scripts/
+RUN scripts/${SEC_BASH} \
+    && groupadd -g ${UID} ${USERNAME} \
     && useradd -r -M -N -g ${UID} -u ${UID} ${USERNAME}
 
 # 1. Install stuff
-# Copy to invalidate the layer on script change. Delete self.
-ARG INST_BASH
-COPY ${INST_BASH} /scripts
-RUN ${INST_BASH}
+# Copy to invalidate the layer on script change.
+COPY --chmod=0755 scripts/${INST_BASH} scripts/
+RUN scripts/${INST_BASH}
 
 # 1. Configure stuff
-# Copy to invalidate the layer on script change. Delete self.
-ARG CONF_BASH
-COPY ${CONF_BASH} /scripts
-RUN ${CONF_BASH}
-
 # 1. Chown all the things
-ARG CHOWN_LIST
-RUN chown -R ${USERNAME}:${USERNAME} ${CHOWN_LIST}
-
 # 1. Remove the install scripts
-RUN rm -r /scripts
+# Copy to invalidate the layer on script change.
+COPY --chmod=0755 scripts/${CONF_BASH} scripts/
+RUN scripts/${CONF_BASH}                              \
+    && chown -R ${USERNAME}:${USERNAME} ${CHOWN_LIST} \
+    && rm -r scripts
 
 # 1. Go rootless
 USER ${UID}
 
 # 1. Expose ports
-ARG PORTS_LIST
 EXPOSE ${PORTS_LIST}
 
 # 1. Add entrypoint
-ARG RUN_CMD
-RUN mkdir -p /opt
-COPY --chown=${UID} --chmod=0755 ${RUN_CMD} /opt
+COPY --chown=${UID} --chmod=0755 ${RUN_CMD} opt/
 ENTRYPOINT [ ${RUN_CMD} ]

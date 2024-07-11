@@ -12,7 +12,7 @@ kerberos: args =                    \
 	admin_type=wizard
 
 ## Remote #######################
-kerberos: base_image = docker.io/library/alpine
+kerberos: base_image = docker.io/library/alpine:latest
 kerberos: image = ${remote}/dreamtrack-net/kerberos
 
 ## Commands #####################
