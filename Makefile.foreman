@@ -1,25 +1,44 @@
 ## Metadata #####################
 foreman: title = Foreman
-foreman: desc = A bare-metal provisioning system
+foreman: desc = Complete lifecycle management tool \
+	for physical and virtual servers
 
 # These get passed to the bash scripts in the PASS_ARGS env var
-foreman: args = x=1 y=2
+foreman: debian_release = bullseye
+foreman: args =                                 \
+	puppet_site=apt.puppet.com              \
+	puppet_deb=puppet7-release-bullseye.deb \
+	foreman_version=3.11                    \
+	foreman_site=deb.theforeman.org         \
+	foreman_key=foreman.asc                 \
+	debian_release=${debian_release}
 
 ## Remote #######################
-foreman: base_image = docker.io/library/alpine
+foreman: base_image = docker.io/bitnami/minideb:${debian_release}
 foreman: image = ${remote}/dreamtrack-net/foreman
 
 ## Commands #####################
-foreman: base_update = apk update
-foreman: requirements = apk add \
-	shadow                   \
-	bash
+foreman: base_update = apt-get update
+foreman: requirements = apt-get -y install \
+	ca-certificates \
+	wget            \
+	facter
 
 ## Internal #####################
 # These are space-delimited lists eg. "a b c"
-foreman: chown_list =   \
+foreman: chown_list = \
 	/var/run
-foreman: ports_list = 443/tcp
+foreman: ports_list = \
+	53/tcp        \
+	53/udp        \
+	67/udp        \
+	68/udp        \
+	69/udp        \
+	80/tcp        \
+	443/tcp       \
+	3000/tcp      \
+	8140/tcp      \
+	8443/tcp
 
 ## Target #######################
 foreman:

@@ -64,6 +64,7 @@ define buildah-bud =
 	--label=build-date="${tag_date}"            \
 	--label=release="${tag_date}"
 	@# --log-level debug
+	@# --compress option specified but is ignored :(
 	@# Add "upload=y" to make invocation to upload
 	$(if $(findstring(y,$(upload))),$(upload-image))
 endef
