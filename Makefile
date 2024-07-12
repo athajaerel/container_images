@@ -1,8 +1,9 @@
-all: kerberos foreman cobbler
+all: kerberos foreman cobbler openldap
 
 include Makefile.kerberos
 include Makefile.foreman
 include Makefile.cobbler
+include Makefile.openldap
 
 # ^^ To add a new image project, add
 # to "all" target and add an include.
@@ -17,7 +18,7 @@ org='Dreamtrack Corp.'
 licence = IDGAF
 maintainer = Adam J. Richardson
 repo = https://github.com/dreamtrack-net/container_images
-# rename img_repo or similar
+# rename remote_repo or similar
 remote = ghcr.io
 uid = 900
 username = _$@
@@ -40,6 +41,8 @@ tag_time=$(shell /usr/bin/date +'%T' | /usr/bin/tr ':' '-')
 tag=${tag_date}T${tag_time}Z
 
 define buildah-bud =
+	dd if=/dev/urandom of=rnd bs=512 count=1
+	@# add "COPY rnd /" into the Containerfile to debug
 	buildah bud --http-proxy=false              \
 	--compress=true --layers=true --format=oci  \
 	-t ${image}:latest -t ${image}:${tag_date}  \
@@ -71,11 +74,12 @@ define buildah-bud =
 	--label=summary="${desc}"                   \
 	--label=build-date="${tag_date}"            \
 	--label=release="${tag_date}"
-	@# --log-level debug
-	scripts/upload.bash \
-		"$(upload)" \
-		"${remote}" \
-		"${image}"  \
+	# --log-level debug
+	scripts/upload.bash   \
+		"$(upload)"   \
+		"${remote}"   \
+		"${image}"    \
+		"${tag_date}" \
 		"${tag}"
 endef
 
