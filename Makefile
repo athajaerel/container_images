@@ -27,6 +27,13 @@ tag_date=$(shell /usr/bin/date +'%F')
 tag_time=$(shell /usr/bin/date +'%T' | /usr/bin/tr ':' '-')
 tag=${tag_date}T${tag_time}Z
 
+define upload-image =
+	buildah login ${remote}
+	buildah push ${image}:latest
+	buildah push ${image}:${tag_date}
+	buildah push ${image}:${tag}
+endef
+
 define buildah-bud =
 	buildah bud                                 \
 	--compress=true --layers=true --format=oci  \
@@ -57,12 +64,11 @@ define buildah-bud =
 	--label=summary="${desc}"                   \
 	--label=build-date="${tag_date}"            \
 	--label=release="${tag_date}"
-	buildah login ${remote}
-	buildah push ${image}:latest
-	buildah push ${image}:${tag_date}
-	buildah push ${image}:${tag}
+	@# --log-level debug
+	@# Add "upload=y" to make invocation to upload
+	$(if $(findstring(y,$(upload))),$(upload-image))
 endef
 
 clean:
-	# delete image(s) from buildah?
 	echo clean
+	@# delete image(s) from buildah?
