@@ -1,6 +1,6 @@
 ## Metadata #####################
-kerberos: title = Kerberos
-kerberos: desc = MIT Kerberos v5, a network authentication system
+kerberos: title = MIT Kerberos v5
+kerberos: desc = Network authentication system
 
 ## Realm ########################
 # These get passed to the bash scripts in the PASS_ARGS env var
