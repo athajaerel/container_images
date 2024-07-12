@@ -12,7 +12,7 @@ kerberos: args =                    \
 	admin_type=wizard
 
 ## Remote #######################
-kerberos: base_image = docker.io/library/alpine
+kerberos: base_image = docker.io/library/alpine:3.19
 kerberos: image = ${remote}/dreamtrack-net/kerberos
 
 ## Commands #####################
@@ -20,6 +20,7 @@ kerberos: base_update = apk update
 kerberos: requirements = apk add \
 	shadow                   \
 	bash                     \
+	iproute2                 \
 	expect                   \
 	libcap                   \
 	krb5                     \
