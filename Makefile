@@ -35,7 +35,7 @@ define upload-image =
 endef
 
 define buildah-bud =
-	buildah bud                                 \
+	buildah bud --http-proxy=false              \
 	--compress=true --layers=true --format=oci  \
 	-t ${image}:latest -t ${image}:${tag_date}  \
 	-t ${image}:${tag}                          \
