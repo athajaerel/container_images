@@ -3,3 +3,6 @@ Cobbler
 move Kerberos in here
 Tinkerbell?
 MAAS?
+FreeIPA
+OpenLDAP
+Keycloak
