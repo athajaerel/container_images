@@ -44,7 +44,6 @@ define buildah-bud =
 	--build-arg=REQUIREMENTS="${requirements}"  \
 	--build-arg=SEC_BASH="${secure}"            \
 	--build-arg=INST_BASH="${install}"          \
-	--build-arg=UNINST="${uninstall}"           \
 	--build-arg=CONF_BASH="${config}"           \
 	--build-arg=UID="${uid}"                    \
 	--build-arg=USERNAME="${username}"          \
