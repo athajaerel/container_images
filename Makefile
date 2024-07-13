@@ -1,10 +1,12 @@
-all: kerberos foreman cobbler
+all: kerberos foreman cobbler freeipa
 
 include Makefile.kerberos
 include Makefile.foreman
 include Makefile.cobbler
+include Makefile.freeipa
 
-# ^^ To add a new image project, add to "all" target and add an include.
+# ^^ To add a new image project,
+# add to "all" target and add an include.
 
 licence = IDGAF
 maintainer = Adam J. Richardson
