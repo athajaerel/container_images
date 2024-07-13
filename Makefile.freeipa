@@ -1,0 +1,33 @@
+## Metadata #####################
+freeipa: title = FreeIPA
+freeipa: desc = Integrated security information management
+
+## Realm ########################
+# These get passed to the bash scripts in the PASS_ARGS env var
+freeipa: args = \
+	hostname=$(shell hostname -s) \
+	domain=$(shell hostname -d)   \
+	admin_pw=adminp@ssword123     \
+	master_pw=masterp@ssword123
+
+## Remote #######################
+freeipa: base_image = docker.io/library/rockylinux:9.3-minimal
+freeipa: image = ${remote}/dreamtrack-net/freeipa
+
+## Commands #####################
+freeipa: base_update = microdnf update -y
+freeipa: requirements = microdnf install -y \
+	--setopt=install_weak_deps=0 \
+	freeipa-server \
+	freeipa-server-dns
+
+## Internal #####################
+# These are space-delimited lists eg. "a b c"
+freeipa: chown_list =   \
+	/var/run
+freeipa: ports_list = 88/tcp
+# ARG PORTS=88/udp 88/tcp 749/tcp 4444/udp 749/tcp 464/udp ?
+
+## Target #######################
+freeipa:
+	$(buildah-bud)
