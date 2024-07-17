@@ -4,7 +4,8 @@ include Makefile.kerberos
 include Makefile.foreman
 include Makefile.cobbler
 
-# ^^ To add a new image project, add to "all" target and add an include.
+# ^^ To add a new image project, add
+# to "all" target and add an include.
 
 cname='Dreamtrack Cloud CA'
 country=GB
@@ -21,10 +22,14 @@ remote = ghcr.io
 uid = 900
 username = _$@
 
-secure = scripts/$@_secure.bash
-install = scripts/$@_install.bash
-config = scripts/$@_config.bash
-run = scripts/$@_run.bash
+rootfs = rootfs/$@
+cert = $@.crt
+key = $@.key
+
+secure = scripts/$@/$@_secure.bash
+install = scripts/$@/$@_install.bash
+config = scripts/$@/$@_config.bash
+run = scripts/$@/$@_run.bash
 
 pass_args = $(foreach a,$(args),$(a))
 
@@ -42,6 +47,9 @@ define buildah-bud =
 	--build-arg=BASE_IMAGE=${base_image}        \
 	--build-arg=BASE_UPDATE="${base_update}"    \
 	--build-arg=REQUIREMENTS="${requirements}"  \
+	--build-arg=rootfs="${rootfs}"              \
+	--build-arg=cert="${cert}"                  \
+	--build-arg=key="${key}"                    \
 	--build-arg=SEC_BASH="${secure}"            \
 	--build-arg=INST_BASH="${install}"          \
 	--build-arg=CONF_BASH="${config}"           \
@@ -72,7 +80,9 @@ define buildah-bud =
 endef
 
 BOTAN_RNG=--format=base64 100
-BOTAN_KEYGEN=--algo=Ed25519 --params=Ed25519
+# Some day...
+#BOTAN_KEYGEN=--algo=Ed25519 --params=Ed25519
+BOTAN_KEYGEN=--algo=RSA --params=2048
 BOTAN_GENSS=${cak_file} "${cname}" --ca --days=3650 --path-limit=2 \
 	--country=${country} --organization="${org}"
 
