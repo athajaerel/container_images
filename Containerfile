@@ -10,6 +10,10 @@ RUN ${BASE_UPDATE}
 ARG REQUIREMENTS
 RUN ${REQUIREMENTS}
 
+# 1. Copy in rootfs directory
+ARG rootfs
+COPY ${rootfs} /
+
 # Pass through some arguments to the bash scripts
 ARG PASS_ARGS
 
@@ -17,7 +21,7 @@ ARG PASS_ARGS
 # Copy to invalidate the layer on script change.
 RUN mkdir -p /scripts
 ARG SEC_BASH
-COPY ${SEC_BASH} /scripts
+COPY ${SEC_BASH} /${SEC_BASH}
 RUN ${SEC_BASH}
 
 # 1. Create user and group
@@ -29,13 +33,18 @@ RUN groupadd -g ${UID} ${USERNAME}                      \
 # 1. Install stuff
 # Copy to invalidate the layer on script change. Delete self.
 ARG INST_BASH
-COPY ${INST_BASH} /scripts
+COPY ${INST_BASH} /${INST_BASH}
 RUN ${INST_BASH}
+
+# 1. Copy in TLS certificates
+COPY certs/ca.* /etc/tls/
+COPY certs/${cert} /etc/tls/
+COPY certs/${key} /etc/tls/
 
 # 1. Configure stuff
 # Copy to invalidate the layer on script change. Delete self.
 ARG CONF_BASH
-COPY ${CONF_BASH} /scripts
+COPY ${CONF_BASH} /${CONF_BASH}
 RUN ${CONF_BASH}
 
 # 1. Chown all the things
@@ -55,5 +64,5 @@ EXPOSE ${PORTS_LIST}
 # 1. Add entrypoint
 ARG RUN_CMD
 RUN mkdir -p /opt
-COPY --chown=${UID} --chmod=0755 ${RUN_CMD} /opt
-ENTRYPOINT [ ${RUN_CMD} ]
+COPY --chown=${UID} --chmod=0755 ${RUN_CMD} /opt/${RUN_CMD}
+ENTRYPOINT [ /opt/${RUN_CMD} ]
