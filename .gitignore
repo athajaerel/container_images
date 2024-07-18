@@ -10,7 +10,7 @@
 !scripts/.empty
 !scripts/*bash
 !scripts/*/
-!scripts/*/*bash
+!scripts/*/*sh
 !certs/
 !certs/.empty
 !rootfs/
@@ -28,3 +28,5 @@
 rootfs/*/cheat/
 rootfs/*/etc/tls/*crt
 rootfs/*/etc/tls/*key
+!utils/
+!utils/*bash
