@@ -37,9 +37,11 @@ COPY ${INST_BASH} /${INST_BASH}
 RUN ${INST_BASH}
 
 # 1. Copy in TLS certificates
-COPY certs/ca.* /etc/tls/
-COPY certs/${cert} /etc/tls/
-COPY certs/${key} /etc/tls/
+ARG cert
+ARG key
+COPY --chown=${UID} --chmod=0400 certs/ca.* /etc/tls/
+COPY --chown=${UID} --chmod=0400 certs/${cert} /etc/tls/
+COPY --chown=${UID} --chmod=0400 certs/${key} /etc/tls/
 
 # 1. Configure stuff
 # Copy to invalidate the layer on script change. Delete self.
@@ -61,8 +63,7 @@ USER ${UID}
 ARG PORTS_LIST
 EXPOSE ${PORTS_LIST}
 
-# 1. Add entrypoint
+# 1. Add entrypoint --- note, can't take a variable
 ARG RUN_CMD
-RUN mkdir -p /opt
-COPY --chown=${UID} --chmod=0755 ${RUN_CMD} /opt/${RUN_CMD}
-ENTRYPOINT [ /opt/${RUN_CMD} ]
+COPY --chown=${UID} --chmod=0755 ${RUN_CMD} /opt/start.sh
+ENTRYPOINT /opt/start.sh

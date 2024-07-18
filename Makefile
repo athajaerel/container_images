@@ -23,13 +23,13 @@ uid = 900
 username = _$@
 
 rootfs = rootfs/$@
-cert = $@.crt
+cert = $@-combined.crt
 key = $@.key
 
 secure = scripts/$@/$@_secure.bash
 install = scripts/$@/$@_install.bash
 config = scripts/$@/$@_config.bash
-run = scripts/$@/$@_run.bash
+run = scripts/$@/$@_run.sh
 
 pass_args = $(foreach a,$(args),$(a))
 
@@ -117,9 +117,9 @@ ca.key: ca-password.txt
 	openssl pkey -check -in ${cak_file} -passin=pass:$(ca_pw) -noout
 	chmod 0400 ${cak_file}
 
-OSSL_KEY_HASH=-pubout -in ${cak_file} -passin=file:${cap_file} \
-	-noout -text
-OSSL_CRT_HASH=-pubkey -in ${cac_file} -noout -text
+OSSL_KEY_HASH=-noout -modulus -in ${cak_file} \
+	-passin=file:${cap_file}
+OSSL_CRT_HASH=-noout -modulus -in ${cac_file}
 
 cac_file = 'certs/ca.crt'
 cak_sh_file = '/dev/shm/cak_hash'
@@ -132,14 +132,10 @@ ca.crt: ca.key
 	$(eval ca_pw=$(shell more $(cap_file)))
 	botan gen_self_signed $(BOTAN_GENSS) --key-pass="${ca_pw}" \
 		| dd status=none of=${cac_file}
-	openssl pkey ${OSSL_KEY_HASH} \
-		| sed '1d' \
-		| xargs \
+	openssl rsa ${OSSL_KEY_HASH} \
 		| sha256sum - \
 		| dd status=none of=${cak_sh_file}
 	openssl x509 ${OSSL_CRT_HASH} \
-		| grep -A3 pub: \
-		| xargs \
 		| sha256sum - \
 		| dd status=none of=${cac_sh_file}
 	$(eval cak_sh=$(shell more ${cak_sh_file}))
@@ -168,5 +164,5 @@ endif
 
 .PHONY: clean
 clean:
-	rm -rf ./certs
+	rm -rf ./certs/*.crt ./certs/*.key ./certs/ca-password.txt
 	@# delete image(s) from buildah?
