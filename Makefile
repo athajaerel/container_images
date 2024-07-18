@@ -1,17 +1,15 @@
-all: kerberos foreman cobbler
+all: kerberos foreman cobbler vault
 
 include Makefile.kerberos
 include Makefile.foreman
 include Makefile.cobbler
+include Makefile.vault
 
 # ^^ To add a new image project, add
 # to "all" target and add an include.
 
 cname='Dreamtrack Cloud CA'
 country=GB
-alt_names=www.dreamtrack.net,web.dreamtrack.net
-scn=cloud.dreamtrack.net
-email=admin@dreamtrack.net
 org='Dreamtrack Corp.'
 
 licence = IDGAF
@@ -97,25 +95,20 @@ certs:
 cap_file = 'certs/ca-password.txt'
 vpath %-password.txt certs
 ca-password.txt: certs
-	chmod -f 0600 $(cap_file) || true
 	botan rng $(BOTAN_RNG) \
 		| dd status=none of=$(cap_file)
 	@# Remove end-of-line mark
 	truncate -s -1 $(cap_file)
-	chmod 0400 $(cap_file)
 
 cak_file = 'certs/ca.key'
 vpath %.key certs
 ca.key: ca-password.txt
-	#echo cap_file=$(cap_file)
-	chmod -f 0600 ${cak_file} || true
 	$(eval ca_pw=$(shell more $(cap_file)))
 	echo ca_pw=$(ca_pw)
 	botan keygen $(BOTAN_KEYGEN) --passphrase="${ca_pw}" \
 		| dd status=none of=$(cak_file)
 	# Check private key is valid
 	openssl pkey -check -in ${cak_file} -passin=pass:$(ca_pw) -noout
-	chmod 0400 ${cak_file}
 
 OSSL_KEY_HASH=-noout -modulus -in ${cak_file} \
 	-passin=file:${cap_file}
@@ -128,7 +121,6 @@ cac_akid_file = '/dev/shm/cak_akid'
 cac_skid_file = '/dev/shm/cac_skid'
 vpath %.crt certs
 ca.crt: ca.key
-	chmod -f 0600 ${cac_file} || true
 	$(eval ca_pw=$(shell more $(cap_file)))
 	botan gen_self_signed $(BOTAN_GENSS) --key-pass="${ca_pw}" \
 		| dd status=none of=${cac_file}
@@ -160,7 +152,6 @@ ifeq (${ca_akid},${ca_skid})
 else
 	echo Certificate generation failed, try creating manually.
 endif
-	chmod 0444 ${cac_file}
 
 .PHONY: clean
 clean:

@@ -1,0 +1,63 @@
+## Metadata #####################
+vault: title = Hashicorp Vault
+vault: desc = Secrets management platform
+vault: alt_names = www.dreamtrack.net,web.dreamtrack.net
+vault: scn = 127.0.0.1
+vault: email = admin@dreamtrack.net
+
+## Realm ########################
+# These get passed to the bash scripts in the PASS_ARGS env var
+vault: args = \
+	VAULT_VERSION=1.17.2 \
+	HASHICORP_FINGERPRINT=C874011F0AB405110D02105534365D9472D7468F \
+	HASHICORP_KEY_ID=34365D9472D7468F \
+	ADMIN=adminy_mcadminface
+
+## Remote #######################
+vault: base_image = docker.io/library/alpine:3.19
+vault: image = ${remote}/dreamtrack-net/vault
+
+## Commands #####################
+vault: base_update = apk update --no-cache
+vault: requirements = apk add --no-cache \
+	shadow \
+	bash
+
+## Internal #####################
+# These are space-delimited lists eg. "a b c"
+vault: chown_list = \
+	/var/run \
+	/data/vault \
+	/logs/vault
+vault: ports_list = 8200/tcp 8201/tcp
+
+## Targets ######################
+vault: vault.crt
+	$(buildah-bud)
+
+vault_key_file = 'certs/vault.key'
+vault.key:
+	botan keygen $(BOTAN_KEYGEN) \
+		| dd status=none of=$(vault_key_file)
+	# Check private key is valid
+	openssl pkey -check -in ${vault_key_file} -noout
+
+# email clobbers SAN so remove it --email='${email}'
+FLAGS_GENPK='${scn}' --dns='${alt_names}' --country=${country} \
+	--organization=${org}
+FLAGS_SC=--ca-key-pass=$(shell more ${cap_file}) --duration=365 ${cac_file} \
+	${cak_file} ${vault_csr_file}
+
+# TODO: ugly, fix
+cap_file = certs/ca-password.txt
+cak_file = certs/ca.key
+cac_file = certs/ca.crt
+vault_csr_file = /dev/shm/vault_csr
+vault_cert_file = certs/vault.crt
+vault.crt: ca.crt vault.key
+	botan gen_pkcs10 ${vault_key_file} ${FLAGS_GENPK} \
+		| dd status=none of=$(vault_csr_file)
+	botan sign_cert ${FLAGS_SC} \
+		| dd status=none of=${vault_cert_file}
+	cat certs/vault.crt certs/ca.crt \
+		| dd status=none of=certs/vault-combined.crt
