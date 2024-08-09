@@ -19,12 +19,14 @@ ARG PASS_ARGS
 
 # 1. Security tweaks in base image
 # Copy to invalidate the layer on script change.
+# On alpine, need "bash" package
 RUN mkdir -p /scripts
 ARG SEC_BASH
-COPY ${SEC_BASH} /${SEC_BASH}
+COPY --chmod=0755 ${SEC_BASH} scripts
 RUN ${SEC_BASH}
 
 # 1. Create user and group
+# On alpine, need "shadow" package
 ARG UID
 ARG USERNAME
 RUN groupadd -g ${UID} ${USERNAME}                      \
@@ -33,7 +35,7 @@ RUN groupadd -g ${UID} ${USERNAME}                      \
 # 1. Install stuff
 # Copy to invalidate the layer on script change. Delete self.
 ARG INST_BASH
-COPY ${INST_BASH} /${INST_BASH}
+COPY --chmod=0755 ${INST_BASH} scripts
 RUN ${INST_BASH}
 
 # 1. Copy in TLS certificates
@@ -46,7 +48,7 @@ COPY --chown=${UID} --chmod=0400 certs/${key} /etc/tls/
 # 1. Configure stuff
 # Copy to invalidate the layer on script change. Delete self.
 ARG CONF_BASH
-COPY ${CONF_BASH} /${CONF_BASH}
+COPY --chmod=0755 ${CONF_BASH} scripts
 RUN ${CONF_BASH}
 
 # 1. Chown all the things

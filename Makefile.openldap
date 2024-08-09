@@ -1,0 +1,88 @@
+## Metadata #####################
+openldap: title = OpenLDAP
+openldap: desc = Open source implementation of LDAP
+
+## Realm ########################
+# These get passed to the bash scripts in the PASS_ARGS env var
+# TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:
+# TLS_AES_128_GCM_SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:
+# ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384:
+# ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:
+# DHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:
+# ECDHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES128-GCM-SHA256:
+# ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:
+# DHE-RSA-AES256-SHA256:ECDHE-ECDSA-AES128-SHA256:
+# ECDHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA256:
+# ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES256-SHA:
+# ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES128-SHA:DHE-RSA-AES128-SHA:
+# RSA-PSK-AES256-GCM-SHA384:DHE-PSK-AES256-GCM-SHA384:
+# RSA-PSK-CHACHA20-POLY1305:DHE-PSK-CHACHA20-POLY1305:
+# ECDHE-PSK-CHACHA20-POLY1305:AES256-GCM-SHA384:PSK-AES256-GCM-SHA384:
+# PSK-CHACHA20-POLY1305:RSA-PSK-AES128-GCM-SHA256:
+# DHE-PSK-AES128-GCM-SHA256:AES128-GCM-SHA256:PSK-AES128-GCM-SHA256:
+# AES256-SHA256:AES128-SHA256:ECDHE-PSK-AES256-CBC-SHA384:
+# ECDHE-PSK-AES256-CBC-SHA:SRP-RSA-AES-256-CBC-SHA:
+# SRP-AES-256-CBC-SHA:RSA-PSK-AES256-CBC-SHA384:
+# DHE-PSK-AES256-CBC-SHA384:RSA-PSK-AES256-CBC-SHA:
+# DHE-PSK-AES256-CBC-SHA:AES256-SHA:PSK-AES256-CBC-SHA384:
+# PSK-AES256-CBC-SHA:ECDHE-PSK-AES128-CBC-SHA256:
+# ECDHE-PSK-AES128-CBC-SHA:SRP-RSA-AES-128-CBC-SHA:
+# SRP-AES-128-CBC-SHA:RSA-PSK-AES128-CBC-SHA256:
+# DHE-PSK-AES128-CBC-SHA256:RSA-PSK-AES128-CBC-SHA:
+# DHE-PSK-AES128-CBC-SHA:AES128-SHA:PSK-AES128-CBC-SHA256:
+# PSK-AES128-CBC-SHA
+
+openldap: ldap_port = 1389
+openldap: ldaps_port = 1636
+
+openldap: args = \
+	admin_password=adminP@5sword                    \
+	alt_names=www.dreamtrack.net,web.dreamtrack.net \
+	base_dn=dc=dev,dc=lab                           \
+	cname='Dreamtrack Cloud CA'                     \
+	config_path=/etc/openldap                       \
+	country=GB                                      \
+	create_ts=20221008100841Z                       \
+	db_path=/var/lib/openldap                       \
+	debug_level=0                                   \
+	desc='OpenLDAP Image'                           \
+	email=admin@dreamtrack.net                      \
+	entry_csn_tail=284775Z\#000000\#000\#000000     \
+	ldap_port=${ldap_port}                          \
+	ldaps_port=${ldaps_port}                        \
+	org='Dreamtrack Corp.'                          \
+	password_hash={SHA256}                          \
+	root_user=Director                              \
+	scn=cloud.dreamtrack.net                        \
+	tls_cipher_suite=TLSv1                          \
+	uuid=eddd107a-db3c-103c-8480-6bebbe1580d6
+
+## Remote #######################
+openldap: base_image = docker.io/library/alpine:3.19
+openldap: image = ${remote}/dreamtrack-net/openldap
+
+## Commands #####################
+openldap: base_update = apk update
+openldap: requirements = apk add \
+	shadow               \
+	bash                 \
+	ca-certificates      \
+	openldap             \
+	openldap-clients     \
+	openldap-back-mdb    \
+	openldap-overlay-all \
+	openldap-passwd-sha2 \
+	botan                \
+	openssl              \
+	acl                  \
+	nss-pam-ldapd
+
+## Internal #####################
+# These are space-delimited lists eg. "a b c"
+openldap: chown_list = \
+	/var/run
+openldap: ports_list = ${ldap_port}/tcp ${ldaps_port}/tcp
+
+## Target #######################
+openldap:
+	$(buildah-bud)

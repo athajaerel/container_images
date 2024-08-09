@@ -25,6 +25,7 @@
 !rootfs/*/*/*/*/
 !rootfs/*/*/*/*/*
 !rootfs/*/*/*/*/*/
+!rootfs/*/*/*/*/*/*
 rootfs/*/cheat/
 rootfs/*/etc/tls/*crt
 rootfs/*/etc/tls/*key
